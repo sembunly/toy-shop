@@ -27,12 +27,11 @@
     @forelse($categories as $c)
       <div class="col-6 col-md-4 col-lg-3">
         <a href="{{ url('/category/'.$c->id.'/products') }}" class="text-decoration-none text-dark">
-          <div class="card soft-card h-100">
-
+          <div class="card soft-card category-page-card h-100">
             @if($c->image)
-              <img src="{{ asset($c->image) }}" class="thumb" alt="{{ $c->name }}">
+              <img src="{{ $c->image_url }}" class="category-page-card__image" alt="{{ $c->name }}">
             @else
-              <div class="noimg">No Image</div>
+              <div class="category-page-card__image category-page-card__placeholder">No Image</div>
             @endif
 
             <div class="card-body">
@@ -44,7 +43,6 @@
                 {{ $c->description ?? 'Tap to see products' }}
               </div>
             </div>
-
           </div>
         </a>
       </div>

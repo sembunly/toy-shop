@@ -1,4 +1,45 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <style>
+        .admin-sidebar-nav {
+            min-height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-sidebar-logout {
+            margin-top: auto;
+            width: 100%;
+            padding: 18px 15px 12px;
+        }
+
+        .admin-sidebar-logout form,
+        .admin-sidebar-logout button.nav-link {
+            width: 100%;
+        }
+
+        .admin-sidebar-logout button.admin-logout-button {
+            display: flex;
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 16px;
+            align-items: center;
+            border-radius: 10px;
+            color: #fff;
+            background: #dc3545;
+            cursor: pointer;
+        }
+
+        .admin-sidebar-logout button.admin-logout-button:hover,
+        .admin-sidebar-logout button.admin-logout-button:focus {
+            color: #fff;
+            background: #bb2d3b;
+        }
+
+        .admin-sidebar-logout button.admin-logout-button i,
+        .admin-sidebar-logout button.admin-logout-button .menu-title {
+            color: #fff;
+        }
+    </style>
     @php
         $canViewProducts = $canAccessAdmin('products', 'index');
         $canCreateProducts = $canAccessAdmin('products', 'create');
@@ -9,7 +50,7 @@
         $canManagePermissions = $canAccessAdmin('permissions', 'index');
     @endphp
 
-    <ul class="nav">
+    <ul class="nav admin-sidebar-nav">
 
         @if($canAccessAdmin('dashboard', 'index'))
         <li class="nav-item">
@@ -26,7 +67,7 @@
         @if($canViewProducts || $canCreateProducts)
         <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#products" aria-expanded="false" aria-controls="products">
-                <i class="menu-icon mdi mdi-laptop"></i>
+                <i class="menu-icon mdi mdi-puzzle"></i>
                 <span class="menu-title">Products</span>
                 <i class="menu-arrow"></i>
             </a>
@@ -114,6 +155,16 @@
             </div>
         </li>
         @endif
+
+        <li class="nav-item admin-sidebar-logout">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="nav-link admin-logout-button w-100 border-0 text-start">
+                    <i class="menu-icon mdi mdi-logout"></i>
+                    <span class="menu-title">Logout</span>
+                </button>
+            </form>
+        </li>
 
     </ul>
 </nav>

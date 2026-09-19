@@ -30,7 +30,7 @@
   {{-- Left Sidebar: Filters --}}
   <div class="col-lg-3">
     <form method="GET" action="{{ route('products.index') }}" class="search-filter-card">
-      <h5 class="fw-bold mb-3" style="color: #4f46e5;">
+      <h5 class="fw-bold mb-3" style="color: #6e6e73;">
         <i class="bi bi-funnel me-2"></i>Filters
       </h5>
 
@@ -82,13 +82,13 @@
         <div class="col-6 col-md-4 col-lg-3">
           <article class="card soft-card product-list-card h-100">
 
-            @if($p->image)
-              <img src="{{ asset($p->image) }}" class="thumb product-list-card__media" alt="{{ $p->name }}">
-            @else
-              <div class="noimg product-list-card__media d-flex align-items-center justify-content-center">
+            <div class="product-list-card__media">
+              @if($p->image)
+                <img src="{{ $p->image_url }}" alt="{{ $p->name }}">
+              @else
                 <span class="small text-muted">No Image</span>
-              </div>
-            @endif
+              @endif
+            </div>
 
             <div class="card-body product-list-card__content d-flex flex-column">
               <h3>{{ $p->name }}</h3>
@@ -101,21 +101,7 @@
                 @if($p->brand)
                   <div><dt>Brand:</dt><dd>{{ $p->brand }}</dd></div>
                 @endif
-                @if($p->model)
-                  <div><dt>Model:</dt><dd>{{ $p->model }}</dd></div>
-                @endif
-                @if($p->ram)
-                  <div><dt>RAM:</dt><dd>{{ $p->ram }}</dd></div>
-                @endif
-                @if($p->storage)
-                  <div><dt>Storage:</dt><dd>{{ $p->storage }}</dd></div>
-                @endif
-                @if($p->processor)
-                  <div><dt>Processor:</dt><dd>{{ $p->processor }}</dd></div>
-                @endif
-                @if($p->screen_size)
-                  <div><dt>Screen:</dt><dd>{{ $p->screen_size }}</dd></div>
-                @endif
+                <div><dt>Available:</dt><dd>{{ $p->stock }}</dd></div>
               </dl>
 
               <div class="product-list-card__price-row">
@@ -125,17 +111,13 @@
                 </span>
               </div>
 
-              <div class="gap-2 mt-auto d-flex">
-                <a class="btn btn-dark pill w-100" href="{{ route('products.show', $p->id) }}">
-                  Detail
-                </a>
-
-                <button type="button"
-                        class="btn btn-success pill w-100 js-add-to-cart"
+              <div class="gap-2 mt-auto d-flex product-list-card__actions">
+                <a class="btn btn-dark pill w-100" href="{{ route('products.show', $p->id) }}">Detail</a>
+                <button type="button" class="btn btn-primary pill w-100 js-add-to-cart"
                         data-url="{{ route('cart.add', $p->id) }}"
                         data-name="{{ $p->name }}"
                         @if($p->stock < 1) disabled @endif>
-                  + Add
+                  Add to Cart
                 </button>
               </div>
             </div>

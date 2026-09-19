@@ -21,7 +21,7 @@
                 <h1 class="welcome-text">
                     Hello, <span class="text-black fw-bold">{{ auth()->user()->name ?? 'Admin' }}</span>
                 </h1>
-                <h3 class="welcome-sub-text">Laptop Store Admin Dashboard</h3>
+                <h3 class="welcome-sub-text">Toy Shop Admin Dashboard</h3>
             </li>
         </ul>
 
@@ -35,12 +35,12 @@
 
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
                 <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img class="img-xs rounded-circle" src="{{ asset('staradmin/images/faces/face8.jpg') }}" alt="Profile image">
+                    <img class="img-xs rounded-circle" src="{{ asset(auth()->user()->avatar ?: 'staradmin/images/faces/face8.jpg') }}" alt="Profile image">
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                     <div class="text-center dropdown-header">
-                        <img class="img-md rounded-circle" src="{{ asset('staradmin/images/faces/face8.jpg') }}" alt="Profile image">
+                        <img class="img-md rounded-circle" src="{{ asset(auth()->user()->avatar ?: 'staradmin/images/faces/face8.jpg') }}" alt="Profile image">
                         <p class="mt-3 mb-1 fw-semibold">{{ auth()->user()->name ?? 'Admin' }}</p>
                         <p class="mb-0 fw-light text-muted">{{ auth()->user()->email ?? 'admin@gmail.com' }}</p>
                     </div>

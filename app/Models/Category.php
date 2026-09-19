@@ -14,7 +14,23 @@ class Category extends Model
         'slug',
         'description',
         'image',
+        'status',
+        'is_active',
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        return filter_var($this->image, FILTER_VALIDATE_URL) ? $this->image : asset($this->image);
+    }
 
     public function products()
     {

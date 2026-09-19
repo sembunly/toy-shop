@@ -7,11 +7,9 @@
     <div class="mb-3 d-flex justify-content-between align-items-center">
         <h4 class="m-0">Edit Category</h4>
 
-        ```
         <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-dark btn-sm">
             Back to List
         </a>
-        ```
 
     </div>
 
@@ -55,11 +53,19 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="1" @selected((int) old('status', $category->status) === 1)>Active</option>
+                        <option value="0" @selected((int) old('status', $category->status) === 0)>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label">Current Image</label>
 
                     <div>
                         @if($category->image)
-                            <img src="{{ asset($category->image) }}" class="border rounded" width="140">
+                            <img src="{{ $category->image_url }}" class="border rounded" width="140">
                         @else
                             <span class="badge text-bg-secondary">No Image</span>
                         @endif
@@ -71,6 +77,9 @@
 
                     <input type="file" name="image" class="form-control" accept="image/*"
                         onchange="previewImg(event,'catEditPreview')">
+
+                    <input type="url" name="image_url" class="form-control mt-2" value="{{ old('image_url') }}"
+                        placeholder="Or paste image URL">
 
                     <div class="mt-2">
                         <img id="catEditPreview" src="" class="border rounded d-none" style="width:140px;height:auto;">

@@ -39,13 +39,11 @@
                                     <th>Category</th>
                                     <th>Name</th>
                                     <th>Brand</th>
-                                    <th>Model</th>
+                                    <th>SKU</th>
                                     <th>Price</th>
+                                    <th>Cost Price</th>
                                     <th>Stock</th>
-                                    <th>RAM</th>
-                                    <th>Storage</th>
-                                    <th>Processor</th>
-                                    <th>Screen Size</th>
+                                    <th>Status</th>
                                     <th class="d-none">Description</th>
                                     <th>Created At</th>
                                     @if($canUseProductActions)
@@ -59,7 +57,7 @@
                                         <td>{{ $loop->iteration }}</td>
                                             <td>
                                                 @if($product->image)
-                                                    <img src="{{ asset($product->image) }}"
+                                                    <img src="{{ $product->image_url }}"
                                                         alt="{{ $product->name }}"
                                                         width="70"
                                                         height="70"
@@ -71,13 +69,11 @@
                                         <td>{{ $product->category->name ?? '-' }}</td>
                                         <td>{{ $product->name }}</td>
                                         <td>{{ $product->brand }}</td>
-                                        <td>{{ $product->model }}</td>
+                                        <td>{{ $product->sku }}</td>
                                         <td>${{ number_format($product->price, 2) }}</td>
+                                        <td>${{ number_format($product->cost_price, 2) }}</td>
                                         <td>{{ $product->stock }}</td>
-                                        <td>{{ $product->ram }}</td>
-                                        <td>{{ $product->storage }}</td>
-                                        <td>{{ $product->processor }}</td>
-                                        <td>{{ $product->screen_size }}</td>
+                                        <td>{{ $product->status ? 'Active' : 'Inactive' }}</td>
                                         <td class="d-none">{{ $product->description }}</td>
                                         <td>{{ $product->created_at ? $product->created_at->format('d-m-Y') : '-' }}</td>
                                         @if($canUseProductActions)
@@ -107,7 +103,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $canUseProductActions ? 14 : 13 }}" class="text-center">No products found.</td>
+                                        <td colspan="{{ $canUseProductActions ? 12 : 11 }}" class="text-center">No products found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

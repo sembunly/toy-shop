@@ -12,7 +12,9 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::where('status', true)->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('status', true)->where('is_active', true))
+            ->with('category');
 
         if ($request->filled('q')) {
             $query->where('name', 'like', '%' . $request->q . '%');
@@ -52,13 +54,15 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(12);
-        $categories = Category::all();
+        $categories = Category::where('status', true)->where('is_active', true)->orderBy('name')->get();
 
         return view('frontend.product.index', compact('products', 'categories'));
     }
 
     public function show(Product $product)
     {
+        abort_unless($product->status && $product->is_active && $product->category?->status && $product->category?->is_active, 404);
+
         return view('frontend.product.show', compact('product'));
     }
 }

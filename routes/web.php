@@ -1,127 +1,70 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TestEmailController;
-use App\Http\Controllers\Frontend\HomeController;
-use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\Frontend\AboutController;
+use App\Http\Controllers\Frontend\CartController as FrontendCartController;
+use App\Http\Controllers\Frontend\CategoryController as FrontendCategoryController;
+use App\Http\Controllers\Frontend\HomeController as FrontendHomeController;
+use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
+use Illuminate\Support\Facades\Route;
 
-// Test Email Route (for Postman testing)
-Route::get('/api/csrf-token', [TestEmailController::class, 'getCsrfToken'])->name('test.csrf');
-Route::post('/api/test-email', [TestEmailController::class, 'sendTestEmail'])->name('test.email');
-Route::post('/api/test-invoice-email', [TestEmailController::class, 'testInvoiceEmail'])->name('test.invoice.email')->middleware('auth'); 
-
-Route::get('/', [HomeController::class, 'index'])->name('home');
-
+// Public storefront: no customer account is required.
+Route::get('/', [FrontendHomeController::class, 'index'])->name('home');
 Route::get('/products', [FrontendProductController::class, 'index'])->name('products.index');
-Route::get('/products/{product}', [FrontendProductController::class, 'show'])->name('products.show');
+Route::get('/products/{product}', [FrontendProductController::class, 'show'])->whereNumber('product')->name('products.show');
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+Route::get('/categories', [FrontendCategoryController::class, 'index'])->name('categories.index');
+Route::get('/categories/{category}', [FrontendCategoryController::class, 'show'])->name('categories.show');
+Route::get('/category/{id}/products', [FrontendCategoryController::class, 'products'])->name('category.products');
+Route::get('/cart', [FrontendCartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add/{id}', [FrontendCartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update/{id}', [FrontendCartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove/{id}', [FrontendCartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/clear', [FrontendCartController::class, 'clear'])->name('cart.clear');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 
-Route::get('/dashboard', function () {
-    if (auth()->check() && auth()->user()->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
+// Keep Breeze's dashboard destination for existing authentication redirects.
+Route::redirect('/dashboard', '/admin/dashboard')->middleware(['auth', 'admin'])->name('dashboard');
 
-    return redirect()->route('home');
-})->middleware('auth')->name('dashboard');
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::redirect('/', '/admin/dashboard')->name('admin.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/categories', [CategoryController::class, 'index'])->name('admin.categories.index');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('admin.categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('admin.categories.store');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('admin.categories.edit');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
+    Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('admin.products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('admin.products.store');
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+    Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+    Route::get('/stock', [StockController::class, 'index'])->name('admin.stock.index');
+    Route::get('/sales-summary', [DashboardController::class, 'salesSummary'])->name('admin.sales-summary');
 
-Route::middleware('auth')->group(function () {
+    // Preserve Laravel's existing account management for administrators.
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->middleware('permission:dashboard,index')
-        ->name('dashboard');
-    Route::get('orders/export', [OrderController::class, 'export'])
-        ->middleware('permission:reports,export')
-        ->name('orders.export');
+// The storefront layout keeps this account link for existing admin sessions.
+Route::get('/profile', [ProfileController::class, 'edit'])
+    ->middleware(['auth', 'admin'])
+    ->name('profile');
 
-    Route::get('products', [AdminProductController::class, 'index'])
-        ->middleware('permission:products,index')
-        ->name('products.index');
-    Route::get('products/create', [AdminProductController::class, 'create'])
-        ->middleware('permission:products,create')
-        ->name('products.create');
-    Route::post('products', [AdminProductController::class, 'store'])
-        ->middleware('permission:products,store')
-        ->name('products.store');
-    Route::get('products/{product}', [AdminProductController::class, 'show'])
-        ->middleware('permission:products,show')
-        ->name('products.show');
-    Route::get('products/{product}/edit', [AdminProductController::class, 'edit'])
-        ->middleware('permission:products,edit')
-        ->name('products.edit');
-    Route::match(['put', 'patch'], 'products/{product}', [AdminProductController::class, 'update'])
-        ->middleware('permission:products,update')
-        ->name('products.update');
-    Route::delete('products/{product}', [AdminProductController::class, 'destroy'])
-        ->middleware('permission:products,destroy')
-        ->name('products.destroy');
-
-    Route::get('categories', [CategoryController::class, 'index'])
-        ->middleware('permission:categories,index')
-        ->name('categories.index');
-    Route::get('categories/create', [CategoryController::class, 'create'])
-        ->middleware('permission:categories,create')
-        ->name('categories.create');
-    Route::post('categories', [CategoryController::class, 'store'])
-        ->middleware('permission:categories,store')
-        ->name('categories.store');
-    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])
-        ->middleware('permission:categories,edit')
-        ->name('categories.edit');
-    Route::match(['put', 'patch'], 'categories/{category}', [CategoryController::class, 'update'])
-        ->middleware('permission:categories,update')
-        ->name('categories.update');
-    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])
-        ->middleware('permission:categories,destroy')
-        ->name('categories.destroy');
-
-    Route::get('permissions', [PermissionController::class, 'index'])
-        ->middleware('permission:permissions,index')
-        ->name('permissions.index');
-    Route::post('permissions/groups', [PermissionController::class, 'createGroup'])
-        ->middleware('permission:permissions,store')
-        ->name('permissions.groups.store');
-    Route::post('permissions', [PermissionController::class, 'store'])
-        ->middleware('permission:permissions,store')
-        ->name('permissions.store');
-
-    Route::get('users', [UserController::class, 'index'])
-        ->middleware('permission:users,index')
-        ->name('users.index');
-    Route::get('users/{user}/edit', [UserController::class, 'edit'])
-        ->middleware('permission:users,edit')
-        ->name('users.edit');
-    Route::match(['put', 'patch'], 'users/{user}', [UserController::class, 'update'])
-        ->middleware('permission:users,update')
-        ->name('users.update');
-    Route::delete('users/{user}', [UserController::class, 'destroy'])
-        ->middleware('permission:users,destroy')
-        ->name('users.destroy');
-
-    Route::get('orders', [OrderController::class, 'index'])
-        ->middleware('permission:reports,index')
-        ->name('orders.index');
-    Route::get('orders/{order}/edit', [OrderController::class, 'edit'])
-        ->middleware('permission:orders,edit')
-        ->name('orders.edit');
-    Route::match(['put', 'patch'], 'orders/{order}', [OrderController::class, 'update'])
-        ->middleware('permission:orders,update')
-        ->name('orders.update');
-    Route::delete('orders/{order}', [OrderController::class, 'destroy'])
-        ->middleware('permission:orders,destroy')
-        ->name('orders.destroy');
-});
-
-require __DIR__.'/frontend/web.php';
 require __DIR__.'/auth.php';

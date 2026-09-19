@@ -3,127 +3,146 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): View
     {
-        $products = Product::with('category')->latest()->get();
+        $products = Product::with('category')
+            ->where('is_active', 1)
+            ->latest()
+            ->get();
 
         return view('admin.products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): View
     {
-        $categories = \App\Models\Category::all();
+        $categories = Category::where('is_active', 1)
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get();
+
         return view('admin.products.create', compact('categories'));
     }
 
-    
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'brand' => 'required|string|max:255',
-        'model' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
-        'ram' => 'nullable|string|max:255',
-        'storage' => 'nullable|string|max:255',
-        'processor' => 'nullable|string|max:255',
-        'screen_size' => 'nullable|string|max:255',
-        'description' => 'nullable|string',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    ]);
+        $data = $this->validated($request, true);
 
-    if ($request->hasFile('image')) {
-        $file = $request->file('image');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('images/products'), $filename);
+        $data['is_active'] = 1;
+        $data['image'] = $this->storeImage($request);
+        unset($data['image_url']);
 
-        $data['image'] = 'images/products/' . $filename;
+        Product::create($data);
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Product created successfully.');
     }
 
-    Product::create($data);
-
-    return redirect()
-        ->route('admin.products.index')
-        ->with('success', 'Product created successfully.');
-}
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Product $product): View
     {
-        //
+        abort_if(!$product->is_active, 404);
+
+        $categories = Category::where('is_active', 1)
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
+    public function update(Request $request, Product $product)
     {
-        $categories = Category::all();
+        abort_if(!$product->is_active, 404);
 
-        return view('admin.products.edit', compact('product','categories'));
+        $data = $this->validated($request);
+
+        if ($request->hasFile('image') || $request->filled('image_url')) {
+            if ($request->hasFile('image') && $product->image && File::exists(public_path($product->image))) {
+                File::delete(public_path($product->image));
+            }
+
+            $data['image'] = $this->storeImage($request);
+        }
+        unset($data['image_url']);
+
+        $product->update($data);
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Product updated successfully.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-public function update(Request $request, Product $product)
-{
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'brand' => 'required|string|max:255',
-        'model' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
-        'ram' => 'nullable|string|max:255',
-        'storage' => 'nullable|string|max:255',
-        'processor' => 'nullable|string|max:255',
-        'screen_size' => 'nullable|string|max:255',
-        'description' => 'nullable|string',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048'
-    ]);
-
-    if ($request->hasFile('image')) {
-        $file = $request->file('image');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('images/products'), $filename);
-        $data['image'] = 'images/products/' . $filename;
-    }
-
-    $product->update($data);
-
-    return redirect()
-        ->route('admin.products.index')
-        ->with('success', 'Product updated successfully');
-}
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Product $product)
     {
-        $product->delete();
+        abort_if(!$product->is_active, 404);
 
-        return redirect()->route('admin.products.index')
-            ->with('success','Product deleted successfully');
+        $product->update([
+            'is_active' => 0,
+        ]);
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Product deleted successfully.');
+    }
+
+    private function validated(Request $request, bool $requireImage = false): array
+    {
+        $rules = [
+            'category_id' => [
+                'required',
+                Rule::exists('categories', 'id')
+                    ->where('is_active', 1),
+            ],
+            'name' => ['required', 'string', 'max:255'],
+            'sku' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('products', 'sku')
+                    ->ignore($request->route('product')?->id),
+            ],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
+            'stock' => ['required', 'integer', 'min:0'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image_url' => ['nullable', 'url', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'status' => ['required', 'boolean'],
+        ];
+
+        if ($requireImage) {
+            $rules['image_url'][] = 'required_without:image';
+            $rules['image'][] = 'required_without:image_url';
+        }
+
+        return $request->validate($rules);
+    }
+
+    private function storeImage(Request $request): ?string
+    {
+        if (!$request->hasFile('image')) {
+            return $request->input('image_url');
+        }
+
+        $file = $request->file('image');
+        $directory = public_path('images/products');
+
+        File::ensureDirectoryExists($directory);
+
+        $filename = time() . '_' . $file->getClientOriginalName();
+
+        $file->move($directory, $filename);
+
+        return 'images/products/' . $filename;
     }
 }

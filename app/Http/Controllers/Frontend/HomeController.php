@@ -11,7 +11,9 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::where('status', true)->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('status', true)->where('is_active', true))
+            ->with('category');
 
         if ($request->filled('q')) {
             $query->where('name', 'like', '%' . $request->q . '%');
@@ -51,7 +53,7 @@ class HomeController extends Controller
         }
 
         $products = $query->paginate(12);
-        $categories = Category::all();
+        $categories = Category::where('status', true)->where('is_active', true)->get();
 
         return view('frontend.home', compact('products', 'categories'));
     }

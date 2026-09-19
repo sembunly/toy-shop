@@ -1,13 +1,13 @@
 @extends('layouts.frontend')
 
-@section('title', 'Store Electronics')
+@section('title', 'Toy Shop')
 @section('custom_storefront', true)
 @section('main_class', 'storefront-main min-vh-70')
 
 @section('content')
   <section class="store-promo">
     <p class="mb-0">
-      Discover the latest electronics, selected for work, play, and everything in between.
+      Discover toys selected for play, learning, and everything in between.
       <a href="{{ route('products.index') }}">Shop now <i class="bi bi-arrow-right-short"></i></a>
     </p>
   </section>
@@ -36,9 +36,9 @@
           <a class="store-category" href="{{ route('category.products', $category->id) }}">
             <span class="store-category__image">
               @if($category->image)
-                <img src="{{ asset($category->image) }}" alt="{{ $category->name }}">
+                <img src="{{ $category->image_url }}" alt="{{ $category->name }}">
               @else
-                <i class="bi bi-laptop" aria-hidden="true"></i>
+                <i class="bi bi-puzzle" aria-hidden="true"></i>
               @endif
             </span>
             <span class="store-category__name">{{ $category->name }}</span>
@@ -63,16 +63,16 @@
 
       <div class="row g-4">
         @forelse($products as $product)
-          <div class="col-6 col-lg-3">
+          <div class="col-6 col-lg-4">
             <article class="store-product-card">
               <a class="store-product-card__link" href="{{ route('products.show', $product->id) }}"
                 aria-label="View {{ $product->name }}"></a>
 
               <div class="store-product-card__media">
                 @if($product->image)
-                  <img src="{{ asset($product->image) }}" alt="{{ $product->name }}">
+                  <img src="{{ $product->image_url }}" alt="{{ $product->name }}">
                 @else
-                  <i class="bi bi-laptop" aria-hidden="true"></i>
+                  <i class="bi bi-puzzle" aria-hidden="true"></i>
                 @endif
               </div>
 
@@ -89,33 +89,21 @@
                   @if($product->brand)
                     <div><dt>Brand:</dt><dd>{{ $product->brand }}</dd></div>
                   @endif
-                  @if($product->model)
-                    <div><dt>Model:</dt><dd>{{ $product->model }}</dd></div>
-                  @endif
-                  @if($product->ram)
-                    <div><dt>RAM:</dt><dd>{{ $product->ram }}</dd></div>
-                  @endif
-                  @if($product->storage)
-                    <div><dt>Storage:</dt><dd>{{ $product->storage }}</dd></div>
-                  @endif
-                  @if($product->processor)
-                    <div><dt>Processor:</dt><dd>{{ $product->processor }}</dd></div>
-                  @endif
-                  @if($product->screen_size)
-                    <div><dt>Screen:</dt><dd>{{ $product->screen_size }}</dd></div>
-                  @endif
+                  <div><dt>Available:</dt><dd>{{ $product->stock }}</dd></div>
                 </dl>
 
                 <div class="store-product-card__price">${{ number_format($product->price, 2) }}</div>
-              </div>
 
-              <button type="button" class="store-product-card__add js-add-to-cart"
-                data-url="{{ route('cart.add', $product->id) }}"
-                data-name="{{ $product->name }}"
-                aria-label="Add {{ $product->name }} to cart"
-                @disabled($product->stock < 1)>
-                <i class="bi {{ $product->stock > 0 ? 'bi-plus-lg' : 'bi-x-lg' }}"></i>
-              </button>
+                <div class="store-product-card__actions">
+                  <a class="btn btn-dark btn-sm pill" href="{{ route('products.show', $product->id) }}">Detail</a>
+                  <button type="button" class="btn btn-primary btn-sm pill js-add-to-cart"
+                    data-url="{{ route('cart.add', $product->id) }}"
+                    data-name="{{ $product->name }}"
+                    @disabled($product->stock < 1)>
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
             </article>
           </div>
         @empty

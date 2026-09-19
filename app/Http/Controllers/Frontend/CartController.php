@@ -17,7 +17,9 @@ class CartController extends Controller
 
     public function add(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::where('status', true)->where('is_active', true)
+            ->whereHas('category', fn ($category) => $category->where('status', true)->where('is_active', true))
+            ->findOrFail($id);
 
         $qty = (int) $request->input('qty', 1);
         $qty = $qty > 0 ? $qty : 1;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>@yield('title','Store Electronics')</title>
+  <title>@yield('title','Toy Shop')</title>
 
   {{-- Bootstrap 5 --}}
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -29,7 +29,7 @@
   <nav class="store-nav navbar navbar-expand-lg sticky-top" aria-label="Main navigation">
     <div class="store-nav__inner container-fluid">
       <a class="store-nav__brand" href="{{ route('home') }}" aria-label="Store home">
-        <i class="bi bi-laptop" aria-hidden="true"></i>
+        <i class="bi bi-puzzle" aria-hidden="true"></i>
       </a>
 
       <div class="store-nav__mobile-actions d-flex d-lg-none align-items-center">
@@ -106,12 +106,12 @@
   @unless(View::hasSection('custom_storefront'))
     {{-- HEADER / HERO --}}
     <header class="container-fluid px-4 mt-3">
-      <div class="card border-0 shadow-sm" style="border-radius: 20px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+      <div class="card border-0 shadow-sm" style="border-radius: 20px; background: #6e6e73;">
         <div class="card-body py-4 px-4">
           <div class="row align-items-center g-3">
             <div class="col-md-7">
-              <h1 class="mb-2 fw-bold text-white">@yield('hero_title','Welcome to Store Electronics')</h1>
-              <p class="mb-0 text-white-50">@yield('hero_subtitle','Discover the latest laptops and accessories at great prices')</p>
+              <h1 class="mb-2 fw-bold text-white">@yield('hero_title','Welcome to Toy Shop')</h1>
+              <p class="mb-0 text-white-50">@yield('hero_subtitle','Discover toys selected for play, learning, and imagination')</p>
             </div>
             <div class="col-md-5 text-md-end">
               @yield('hero_action')
@@ -144,11 +144,11 @@
     <div class="container-fluid px-4">
       <div class="row g-4">
         <div class="col-md-6 col-lg-3">
-          <div class="mb-2 fw-bold fs-5" style="color: #4f46e5;">
-            <i class="bi bi-laptop me-2"></i>Store Electronics
+          <div class="mb-2 fw-bold fs-5" style="color: #6e6e73;">
+            <i class="bi bi-puzzle me-2"></i>Toy Shop
           </div>
           <div class="small" style="color: #9ca3af;">
-            Your trusted source for laptops and electronics in Cambodia.
+            Your trusted toy shop in Cambodia.
           </div>
         </div>
         <div class="col-6 col-md-3 col-lg-2">
@@ -165,7 +165,7 @@
             <div class="mb-1">
               <i class="bi bi-geo-alt me-1"></i>BELTEI IU Campus 1, Tuol Sleng
             </div>
-            <div class="mb-1"><i class="bi bi-telephone me-1"></i>+855 10 800 921</div>
+            <div class="mb-1"><i class="bi bi-telephone me-1"></i>010 800 921</div>
             <div><i class="bi bi-envelope me-1"></i>sembunly2005@gmail.com</div>
           </div>
         </div>
@@ -173,7 +173,7 @@
           <div class="mb-2 fw-semibold" style="color: #f3f4f6;">Find Us</div>
           <iframe
             class="store-footer__map"
-            src="https://maps.google.com/maps?q=BELTEI%20International%20University%20Campus%201%20Tuol%20Sleng%2C%2021%20Street%20360%2C%20Phnom%20Penh&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+            src="https://maps.google.com/maps?q=11.527105776635958,104.91044278935432&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
             title="BELTEI International University Campus 1, Tuol Sleng"
             loading="lazy"
             allowfullscreen
@@ -183,15 +183,15 @@
       </div>
       <hr class="my-4" style="border-color: #374151;">
       <div class="d-flex justify-content-between small" style="color: #6b7280;">
-        <span>© {{ date('Y') }} Store Electronics</span>
-        <span>Store Laptop</span>
+        <span>© {{ date('Y') }} Toy Shop</span>
+        <span>Toy Shop</span>
       </div>
     </div>
   </footer>
 
   {{-- TOAST --}}
   <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="cartToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="background: #4f46e5; border-radius: 12px;">
+    <div id="cartToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true" style="background: #6e6e73; border-radius: 12px;">
       <div class="d-flex">
         <div class="toast-body d-flex align-items-center gap-2">
           <i class="bi bi-check-circle-fill"></i>

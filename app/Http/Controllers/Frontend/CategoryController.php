@@ -10,14 +10,17 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount('products')->get();
+        $categories = Category::where('status', true)->where('is_active', true)->withCount(['products' => function ($query) {
+            $query->where('status', true)->where('is_active', true);
+        }])->get();
 
         return view('frontend.categories.index', compact('categories'));
     }
 
     public function show(Category $category, Request $request)
     {
-        $query = $category->products()->with('category');
+        abort_unless($category->status && $category->is_active, 404);
+        $query = $category->products()->where('status', true)->where('is_active', true)->with('category');
 
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
@@ -56,8 +59,9 @@ class CategoryController extends Controller
         public function products($id)
         {
             $category = Category::findOrFail($id);
+            abort_unless($category->status && $category->is_active, 404);
 
-            $products = $category->products()->latest()->paginate(12);
+            $products = $category->products()->where('status', true)->where('is_active', true)->latest()->paginate(12);
 
             return view('frontend.categories.products', compact('category', 'products'));
         }

@@ -20,6 +20,13 @@
         @endif
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-warning">{{ session('error') }}</div>
+    @endif
+
     <div class="shadow-sm card">
         <div class="p-0 card-body">
 
@@ -29,6 +36,7 @@
                     <tr>
                         <th style="width:80px;">ID</th>
                         <th>Category Name</th>
+                        <th style="width:120px;" class="text-center">Status</th>
                         <th style="width:140px;" class="text-center">Image</th>
                         @if($canUseCategoryActions)
                             <th style="width:200px;" class="text-center">Actions</th>
@@ -49,9 +57,15 @@
                             </td>
 
                             <td class="text-center">
+                                <span class="badge {{ $c->status ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ $c->status ? 'Active' : 'Inactive' }}
+                                </span>
+                            </td>
+
+                            <td class="text-center">
 
                                 @if($c->image)
-                                    <img src="{{ asset($c->image) }}" width="70" class="border rounded">
+                                    <img src="{{ $c->image_url }}" width="70" class="border rounded">
                                 @else
                                     <span class="badge text-bg-secondary">No Image</span>
                                 @endif
@@ -89,7 +103,7 @@
                     @empty
 
                         <tr>
-                            <td colspan="{{ $canUseCategoryActions ? 4 : 3 }}" class="p-4 text-center text-muted">
+                            <td colspan="{{ $canUseCategoryActions ? 5 : 4 }}" class="p-4 text-center text-muted">
                                 No categories found
                             </td>
                         </tr>

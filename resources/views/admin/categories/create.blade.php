@@ -51,10 +51,21 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="1" @selected(old('status', '1') == '1')>Active</option>
+                        <option value="0" @selected(old('status') === '0')>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label">Category Image (optional)</label>
 
                     <input type="file" name="image" class="form-control" accept="image/*"
                         onchange="previewImg(event,'catPreview')">
+
+                    <input type="url" name="image_url" class="form-control mt-2" value="{{ old('image_url') }}"
+                        placeholder="Or paste image URL">
 
                     <div class="mt-2">
                         <img id="catPreview" src="" class="border rounded d-none" style="width:120px; height:auto;">

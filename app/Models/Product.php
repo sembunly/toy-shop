@@ -12,23 +12,34 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'name',
+        'sku',
         'brand',
-        'model',
         'price',
+        'cost_price',
         'stock',
         'image',
         'description',
-        'ram',
-        'storage',
-        'processor',
-        'screen_size',
+        'status',
+        'is_active',
     ];
 
     protected $casts = [
         'category_id' => 'integer',
         'price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
         'stock' => 'integer',
+        'status' => 'boolean',
+        'is_active' => 'boolean',
     ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        return filter_var($this->image, FILTER_VALIDATE_URL) ? $this->image : asset($this->image);
+    }
 
     public function category()
     {

@@ -15,16 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('brand');
-            $table->string('model');
+            $table->string('sku')->unique();
+            $table->string('brand')->nullable();
             $table->decimal('price', 10, 2);
+            $table->decimal('cost_price', 10, 2)->nullable();
             $table->integer('stock')->default(0);
             $table->string('image')->nullable();
             $table->text('description')->nullable();
-            $table->string('ram')->nullable();
-            $table->string('storage')->nullable();
-            $table->string('processor')->nullable();
-            $table->string('screen_size')->nullable();
+            $table->boolean('status')->default(true);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

@@ -17,6 +17,23 @@
                 <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
+                    @if($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if($categories->isEmpty())
+                        <div class="alert alert-warning">
+                            Add a category before creating a product.
+                            <a href="{{ route('admin.categories.create') }}" class="alert-link">Create category</a>
+                        </div>
+                    @endif
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Product Name</label>
@@ -29,8 +46,8 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Model</label>
-                            <input type="text" name="model" class="form-control" placeholder="Enter model">
+                            <label class="form-label">SKU</label>
+                            <input type="text" name="sku" class="form-control" placeholder="Enter SKU">
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -49,28 +66,21 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
+                            <label class="form-label">Cost Price</label>
+                            <input type="number" step="0.01" min="0" name="cost_price" class="form-control" placeholder="Enter cost price">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Stock</label>
                             <input type="number" min="0" name="stock" class="form-control" placeholder="Enter stock quantity">
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">RAM</label>
-                            <input type="text" name="ram" class="form-control" placeholder="Example: 8GB">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Storage</label>
-                            <input type="text" name="storage" class="form-control" placeholder="Example: 512GB SSD">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Processor</label>
-                            <input type="text" name="processor" class="form-control" placeholder="Example: Intel Core i5">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Screen Size</label>
-                            <input type="text" name="screen_size" class="form-control" placeholder="Example: 15.6 inch">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="1" @selected(old('status', '1') == '1')>Active</option>
+                                <option value="0" @selected(old('status') === '0')>Inactive</option>
+                            </select>
                         </div>
 
                         <div class="col-md-12 mb-3">
@@ -81,6 +91,8 @@
                         <div class="col-md-12 mb-4">
                             <label class="form-label">Image</label>
                             <input type="file" name="image" class="form-control">
+                            <input type="url" name="image_url" class="form-control mt-2" value="{{ old('image_url') }}"
+                                placeholder="Or paste image URL">
                         </div>
                     </div>
 

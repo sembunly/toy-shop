@@ -41,42 +41,17 @@
     <div class="p-3 card soft-card">
       <div class="overflow-hidden rounded-4" style="box-shadow: var(--soft-shadow);">
         @php
-          $mainImg = $product->image ? asset($product->image) : null;
+          $mainImg = $product->image ? $product->image_url : null;
         @endphp
+        @if($mainImg)
+          <img src="{{ $mainImg }}" alt="{{ $product->name }}"
+               style="width:100%;height:800px;object-fit:cover;">
+        @else
+          <div class="d-flex align-items-center justify-content-center text-muted"
+               style="height:800px;background:#f8f9fa;">No Image</div>
+        @endif
       </div>
 
-      @php
-        $thumbs = collect([]);
-
-        if ($product->image) {
-            $thumbs->push(asset($product->image));
-        }
-  
-        if (isset($images) && $images) {
-            foreach ($images as $img) {
-                $path = $img->image ?? $img->filename ?? $img->path ?? null;
-
-                if ($path) {
-                    $thumbs->push(asset('images/' . $path));
-                }
-            }
-        }
-
-        $thumbs = $thumbs->unique()->values();
-      @endphp
-
-      @if($thumbs->count() > 0)
-        <div class="flex-wrap gap-2 mt-3 d-flex">
-          @foreach($thumbs as $t)
-            <button type="button"
-                    class="p-0 overflow-hidden border-0 btn rounded-4 thumb-btn"
-                    data-img="{{ $t }}"
-                    style="width:100%;height:500px;box-shadow: 0 8px 18px rgba(0,0,0,.08);">
-              <img src="{{ $t }}" style="width:100%;height:100%;object-fit:cover;" alt="thumb">
-            </button>
-          @endforeach
-        </div>
-      @endif
     </div>
   </div>
 
@@ -126,38 +101,25 @@
 
         <div class="col-6">
           <div class="p-2 border rounded-4 bg-light">
-            <div class="text-muted small">Model</div>
-            <div class="fw-semibold">{{ $product->model ?? 'N/A' }}</div>
+            <div class="text-muted small">Available</div>
+            <div class="fw-semibold">{{ $product->stock }}</div>
           </div>
         </div>
 
         <div class="col-6">
           <div class="p-2 border rounded-4 bg-light">
-            <div class="text-muted small">RAM</div>
-            <div class="fw-semibold">{{ $product->ram ?? 'N/A' }}</div>
+            <div class="text-muted small">Cost Price</div>
+            <div class="fw-semibold">${{ number_format($product->cost_price ?? 0, 2) }}</div>
           </div>
         </div>
 
         <div class="col-6">
           <div class="p-2 border rounded-4 bg-light">
-            <div class="text-muted small">Storage</div>
-            <div class="fw-semibold">{{ $product->storage ?? 'N/A' }}</div>
+            <div class="text-muted small">Status</div>
+            <div class="fw-semibold">{{ $product->status ? 'Active' : 'Inactive' }}</div>
           </div>
         </div>
 
-        <div class="col-6">
-          <div class="p-2 border rounded-4 bg-light">
-            <div class="text-muted small">Processor</div>
-            <div class="fw-semibold">{{ $product->processor ?? 'N/A' }}</div>
-          </div>
-        </div>
-
-        <div class="col-6">
-          <div class="p-2 border rounded-4 bg-light">
-            <div class="text-muted small">Screen Size</div>
-            <div class="fw-semibold">{{ $product->screen_size ?? 'N/A' }}</div>
-          </div>
-        </div>
       </div>
 
       <hr class="my-3">
@@ -249,7 +211,7 @@
         <div class="col-6 col-md-4 col-lg-3">
           <div class="card soft-card h-100">
             @if($rp->image)
-              <img src="{{ asset('storage/' . $rp->image) }}" class="thumb" alt="{{ $rp->name }}">
+              <img src="{{ $rp->image_url }}" class="thumb" alt="{{ $rp->name }}">
             @else
               <div class="noimg"><span class="small">No Image</span></div>
             @endif
@@ -278,14 +240,6 @@
 
 @push('scripts')
 <script>
-  document.querySelectorAll('.thumb-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const main = document.getElementById('mainImg');
-      if (!main) return;
-      main.src = btn.dataset.img;
-    });
-  });
-
   const qtyInput = document.getElementById('qty');
   const minus = document.getElementById('qtyMinus');
   const plus = document.getElementById('qtyPlus');

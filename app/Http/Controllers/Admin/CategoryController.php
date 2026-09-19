@@ -3,113 +3,129 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): View
     {
-        $categories = Category::latest()->get();
+        $categories = Category::where('is_active', 1)
+            ->latest()
+            ->get();
+
         return view('admin.categories.index', compact('categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): View
     {
         return view('admin.categories.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name'=>'required',
-            'slug'=>'required',
-            'description'=>'nullable',
-            'image'=>'nullable|image'
-        ]);
+        $data = $this->validated($request, true);
 
-        if($request->hasFile('image')){
-            $file = $request->file('image');
-            $filename = time().'_'.$file->getClientOriginalName();
-            $file->move(public_path('images/categories'),$filename);
-            $data['image'] = 'images/categories/' . $filename;
-        }
+        $data['is_active'] = 1;
+        $data['image'] = $this->storeImage($request);
+        unset($data['image_url']);
 
         Category::create($data);
 
-        return redirect()->route('admin.categories.index');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Category created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Category $category): View
     {
-        $category = Category::findOrFail($id);
-        return view('admin.categories.show', compact('category'));
-    }
+        abort_if(!$category->is_active, 404);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $category = Category::findOrFail($id);
         return view('admin.categories.edit', compact('category'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Category $category)
     {
-        $category = Category::findOrFail($id);
+        abort_if(!$category->is_active, 404);
 
-        $data = $request->validate([
-            'name'=>'required',
-            'slug'=>'required',
-            'description'=>'nullable',
-            'image'=>'nullable|image'
-        ]);
+        $data = $this->validated($request);
 
-        if($request->hasFile('image')){
-            if($category->image && file_exists(public_path($category->image))){
-                unlink(public_path($category->image));
+        if ($request->hasFile('image') || $request->filled('image_url')) {
+            if ($request->hasFile('image') && $category->image && File::exists(public_path($category->image))) {
+                File::delete(public_path($category->image));
             }
 
-            $file = $request->file('image');
-            $filename = time().'_'.$file->getClientOriginalName();
-            $file->move(public_path('images/categories'),$filename);
-            $data['image'] = 'images/categories/' . $filename;
+            $data['image'] = $this->storeImage($request);
         }
+        unset($data['image_url']);
 
         $category->update($data);
 
-        return redirect()->route('admin.categories.index');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Category updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Category $category)
     {
-        $category = Category::findOrFail($id);
+        abort_if(!$category->is_active, 404);
 
-        if($category->image && file_exists(public_path('images/categories/'.$category->image))){
-            unlink(public_path('images/categories/'.$category->image));
+        if ($category->products()->where('is_active', 1)->exists()) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('error', 'This category cannot be deleted while it has products.');
         }
 
-        $category->delete();
+        $category->update([
+            'is_active' => 0,
+        ]);
 
-        return redirect()->route('admin.categories.index');
+        return redirect()
+            ->route('admin.categories.index')
+            ->with('success', 'Category deleted successfully.');
+    }
+
+    private function validated(Request $request, bool $requireImage = false): array
+    {
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:categories,slug,' . $request->route('category')?->id,
+            ],
+            'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image_url' => ['nullable', 'url', 'max:255'],
+            'status' => ['required', 'boolean'],
+        ];
+
+        if ($requireImage) {
+            $rules['image_url'][] = 'required_without:image';
+            $rules['image'][] = 'required_without:image_url';
+        }
+
+        return $request->validate($rules);
+    }
+
+    private function storeImage(Request $request): ?string
+    {
+        if (!$request->hasFile('image')) {
+            return $request->input('image_url');
+        }
+
+        $file = $request->file('image');
+        $directory = public_path('images/categories');
+
+        File::ensureDirectoryExists($directory);
+
+        $filename = time() . '_' . $file->getClientOriginalName();
+
+        $file->move($directory, $filename);
+
+        return 'images/categories/' . $filename;
     }
 }
