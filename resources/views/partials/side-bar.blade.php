@@ -1,15 +1,20 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <style>
         .admin-sidebar-nav {
+            position: relative;
             min-height: calc(100vh - 70px);
+            padding-bottom: 80px;
             display: flex;
             flex-direction: column;
         }
 
         .admin-sidebar-logout {
-            margin-top: auto;
-            width: 100%;
-            padding: 18px 15px 12px;
+            position: absolute;
+            right: 15px;
+            bottom: 20px;
+            left: 15px;
+            width: auto;
+            padding: 0;
         }
 
         .admin-sidebar-logout form,
@@ -24,20 +29,20 @@
             padding: 10px 16px;
             align-items: center;
             border-radius: 10px;
-            color: #fff;
-            background: #dc3545;
+            color: #dc3545;
+            background: transparent;
             cursor: pointer;
         }
 
         .admin-sidebar-logout button.admin-logout-button:hover,
         .admin-sidebar-logout button.admin-logout-button:focus {
-            color: #fff;
-            background: #bb2d3b;
+            color: #bb2d3b;
+            background: rgba(220, 53, 69, .08);
         }
 
         .admin-sidebar-logout button.admin-logout-button i,
         .admin-sidebar-logout button.admin-logout-button .menu-title {
-            color: #fff;
+            color: inherit;
         }
     </style>
     @php
